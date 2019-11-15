@@ -1,31 +1,53 @@
-var express = require('express');
-var app = express();
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const app = express();
 
-var CreateAccount = require('CreateAccount');
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
-// This responds with "Hello World" on the homepage
-app.get('/', function (req, res) {
-   
-   res.send('Hello GET');
-})
+const stellarService = require("./services/stellarService");
 
-// This responds a POST request for the homepage
-app.post('/', function (req, res) {
-   console.log("Got a POST request for the homepage");
-   res.send('Hello POST');
-})
+app.get("/createAccount", async (req, res, next) => {
+  let account;
+  try {
+    account = await stellarService.createStellarAccount();
+  } catch (error) {
+    return next(error);
+  }
+  res.send({ account });
+});
 
-// This responds a GET request for the /list_user page.
-app.get('/GetBalance', function (req, res) {
-   console.log("Got a GET request for /list_user");
-   res.send('Page Listing');
-})
+app.get("/balance", async (req, res, next) => {
+  const { accountId } = req.query;
+  let balance;
+  try {
+    balance = await stellarService.getAccountBalance(accountId);
+  } catch (error) {
+    return next(error);
+  }
+  res.send({ balance });
+});
 
+app.post("/transfer", async (req, res, next) => {
+  const { receiverId, senderSecret, amount } = req.body;
+  try {
+    await stellarService.transferXLM(receiverId, senderSecret, amount);
+  } catch (error) {
+    return next(error);
+  }
+  res.sendStatus(204);
+});
 
+app.use((err, req, res, next) => {
+  console.log("err: ", err);
+  res.status(err.status || 500);
+  res.send({ err });
+});
 
-var server = app.listen(8081, function () {
-   var host = server.address().address
-   var port = server.address().port
-   
-   console.log("Example app listening at http://%s:%s", host, port)
-})
+var server = app.listen(8081, function() {
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log("app listening at http://%s:%s", host, port);
+});
