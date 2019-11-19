@@ -49,4 +49,23 @@ async function transferXLM(receiverId, senderSecret, amount) {
   return server.submitTransaction(transaction);
 }
 
-module.exports = { createStellarAccount, getAccountBalance, transferXLM };
+async function streamForAccount(accountId) {
+  return server
+    .payments()
+    .forAccount(accountId)
+    .cursor("now")
+    .stream({
+      onmessage: PaymentResponse => {
+        console.log(
+          `Account Id: ${accountId}\nis created with ${PaymentResponse.amount} XLM\nfrom Account: ${PaymentResponse.from}\n`
+        );
+      }
+    });
+}
+
+module.exports = {
+  createStellarAccount,
+  getAccountBalance,
+  transferXLM,
+  streamForAccount
+};

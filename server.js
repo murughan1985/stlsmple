@@ -40,6 +40,16 @@ app.post("/transfer", async (req, res, next) => {
   res.sendStatus(204);
 });
 
+app.post("/listen", async (req, res, next) => {
+  const { accountId } = req.body;
+  try {
+    await stellarService.streamForAccount(accountId);
+  } catch (error) {
+    return next(error);
+  }
+  return res.sendStatus(204);
+});
+
 app.use((err, req, res, next) => {
   console.log("err: ", err);
   res.status(err.status || 500);
