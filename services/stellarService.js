@@ -56,16 +56,38 @@ async function streamForAccount(accountId) {
     .cursor("now")
     .stream({
       onmessage: PaymentResponse => {
-        console.log(
-          `Account Id: ${accountId}\nis created with ${PaymentResponse.amount} XLM\nfrom Account: ${PaymentResponse.from}\n`
-        );
+        logTransaction(PaymentResponse);
       }
     });
+}
+
+async function streamPayments(accountAddressList) {
+  server
+    .payments()
+    .cursor("now")
+    .stream({
+      onmessage: PaymentResponse => {
+        if (accountAddressList.includes(PaymentResponse.to)) {
+          logTransaction(PaymentResponse);
+        }
+      }
+    });
+}
+
+function logTransaction(paymentResponse) {
+  console.log(
+    `
+    Account Id: ${paymentResponse.to}
+    is credited with ${paymentResponse.amount} XLM
+    from Account: ${paymentResponse.from}
+    `
+  );
 }
 
 module.exports = {
   createStellarAccount,
   getAccountBalance,
   transferXLM,
-  streamForAccount
+  streamForAccount,
+  streamPayments
 };

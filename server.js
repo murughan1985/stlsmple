@@ -3,11 +3,15 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const app = express();
 
+const stellarService = require("./services/stellarService");
+
+const accountAddresses = require('./exchange/addressList');
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const stellarService = require("./services/stellarService");
+stellarService.streamPayments(accountAddresses);
 
 app.get("/createAccount", async (req, res, next) => {
   let account;
