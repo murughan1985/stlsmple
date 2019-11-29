@@ -1,6 +1,7 @@
 const StellarSdk = require("stellar-sdk");
 const server = new StellarSdk.Server("https://horizon-testnet.stellar.org");
 const fetch = require("node-fetch");
+const _ = require('lodash');
 
 async function createStellarAccount() {
   const pair = StellarSdk.Keypair.random();
@@ -74,6 +75,21 @@ async function streamPayments(accountAddressList) {
     });
 }
 
+async function fetchTransactionForAccount(accountId) {
+  const result = await server
+    .payments()
+    .forAccount(accountId)
+    .order("desc")
+    // .limit(numberOfTransaction)
+    .call();
+  let payments = result.records.filter(t => t.type_i == 1).map(t => {
+    delete t._links;
+    delete t.created_at;
+    return t;
+  });
+  return payments;
+}
+
 function logTransaction(paymentResponse) {
   console.log(
     `
@@ -89,5 +105,6 @@ module.exports = {
   getAccountBalance,
   transferXLM,
   streamForAccount,
-  streamPayments
+  streamPayments,
+  fetchTransactionForAccount
 };

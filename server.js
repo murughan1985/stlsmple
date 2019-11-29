@@ -44,6 +44,16 @@ app.post("/transfer", async (req, res, next) => {
   res.sendStatus(204);
 });
 
+app.get("/pastTransaction", async (req, res, next) => {
+  let payments;
+  try {
+    payments = await stellarService.fetchTransactionForAccount(req.query.accountId);
+  } catch (error) {
+    return next(error);
+  }
+  res.send(payments);
+});
+
 app.post("/listen", async (req, res, next) => {
   const { accountId } = req.body;
   try {
